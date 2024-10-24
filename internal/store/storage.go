@@ -10,11 +10,11 @@ type Storage struct {
 	//Interfaces determine Tables / Store Points
 	Posts interface {
 		//Defining Methods
-		Create(context.Context) error
+		Create(context.Context, *Post) error
 	}
 
 	Users interface {
-		Create(context.Context) error
+		Create(context.Context, *User) error
 	}
 }
 
@@ -22,7 +22,7 @@ type Storage struct {
 func NewStorage(db *sql.DB) Storage {
 	//Creating and returning a Storage object with Repository References
 	return Storage{
-		Posts: &PostsStore{db},
-		Users: &UsersStore{db},
+		Posts: &PostStore{db},
+		Users: &UserStore{db},
 	}
 }
