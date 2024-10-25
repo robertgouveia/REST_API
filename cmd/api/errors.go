@@ -15,10 +15,10 @@ func (app *application) badRequest(w http.ResponseWriter, r *http.Request, err e
 	writeJSONError(w, http.StatusBadRequest, err.Error())
 }
 
-func (app *application) notFound(w http.ResponseWriter, r *http.Request, err error) {
-	writeJSONError(w, http.StatusNotFound, "Resource not found")
+func (app *application) conflict(w http.ResponseWriter, r *http.Request, err error) {
+	writeJSONError(w, http.StatusConflict, err.Error())
 }
 
-func (app *application) conflict(w http.ResponseWriter, r *http.Request, err error) {
-	writeJSONError(w, http.StatusConflict, "Client Versioning Error")
+func (app *application) notFound(w http.ResponseWriter, r *http.Request, err error) {
+	writeJSONError(w, http.StatusNotFound, "Resource not found")
 }
