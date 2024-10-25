@@ -3,6 +3,11 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
+)
+
+var (
+	ErrNotFound = errors.New("record not found")
 )
 
 // Repository Pattern for decoupling
@@ -11,6 +16,7 @@ type Storage struct {
 	Posts interface {
 		//Defining Methods
 		Create(context.Context, *Post) error
+		GetByID(context.Context, int64) (*Post, error)
 	}
 
 	Users interface {
