@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 )
 
 var (
-	ErrNotFound = errors.New("Record Not Found")
-	ErrConflict = errors.New("Client Conflict in Versions")
+	ErrNotFound          = errors.New("record not found")
+	ErrConflict          = errors.New("client conflict in versions")
+	QueryTimeoutDuration = time.Second * 5
 )
 
 // Repository Pattern for decoupling
