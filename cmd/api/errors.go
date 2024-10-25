@@ -18,3 +18,7 @@ func (app *application) badRequest(w http.ResponseWriter, r *http.Request, err e
 func (app *application) notFound(w http.ResponseWriter, r *http.Request, err error) {
 	writeJSONError(w, http.StatusNotFound, "Resource not found")
 }
+
+func (app *application) conflict(w http.ResponseWriter, r *http.Request, err error) {
+	writeJSONError(w, http.StatusConflict, "Client Versioning Error")
+}

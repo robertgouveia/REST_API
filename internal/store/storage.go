@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("record not found")
+	ErrNotFound = errors.New("Record Not Found")
+	ErrConflict = errors.New("Client Conflict in Versions")
 )
 
 // Repository Pattern for decoupling
