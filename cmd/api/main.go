@@ -19,13 +19,13 @@ func main() {
 			maxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 30),
 			maxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "15m"),
 		},
-		env: "development",
+		env: env.GetString("ENV", "development"),
 	}
 	db, err := db.New(cfg.db.addr, cfg.db.maxOpenConns, cfg.db.maxIdleConns, cfg.db.maxIdleTime)
 	if err != nil {
 		log.Panic(err)
 	}
-	db.Close()
+	defer db.Close()
 	log.Println("Database connected")
 
 	store := store.NewStorage(db)
