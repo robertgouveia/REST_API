@@ -25,6 +25,7 @@ type dbConfig struct {
 type config struct {
 	addr string
 	db   dbConfig
+	env  string
 }
 
 func (app *application) mount() http.Handler {
