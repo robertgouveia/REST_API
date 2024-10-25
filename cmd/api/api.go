@@ -15,8 +15,16 @@ type application struct {
 	store  store.Storage
 }
 
+type dbConfig struct {
+	addr         string
+	maxOpenConns int
+	maxIdleConns int
+	maxIdleTime  string
+}
+
 type config struct {
 	addr string
+	db   dbConfig
 }
 
 func (app *application) mount() http.Handler {
