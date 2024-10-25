@@ -22,13 +22,18 @@ type Storage struct {
 	Users interface {
 		Create(context.Context, *User) error
 	}
+
+	Comments interface {
+		GetByPostID(context.Context, int64) ([]Comment, error)
+	}
 }
 
 // Defining a Store and supplying the dependencies
 func NewStorage(db *sql.DB) Storage {
 	//Creating and returning a Storage object with Repository References
 	return Storage{
-		Posts: &PostStore{db},
-		Users: &UserStore{db},
+		Posts:    &PostStore{db},
+		Users:    &UserStore{db},
+		Comments: &CommentStore{db},
 	}
 }
