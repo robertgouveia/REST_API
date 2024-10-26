@@ -1,11 +1,10 @@
 package main
 
 import (
-	"log"
-
 	"github.com/robertgouveia/social/internal/db"
 	"github.com/robertgouveia/social/internal/env"
 	"github.com/robertgouveia/social/internal/store"
+	"go.uber.org/zap"
 )
 
 const version = "0.0.1"
@@ -40,22 +39,27 @@ func main() {
 		},
 		env: env.GetString("ENV", "development"),
 	}
+
+	logger := zap.Must(zap.NewProduction()).Sugar()
+	defer logger.Sync()
+
 	db, err := db.New(cfg.db.addr, cfg.db.maxOpenConns, cfg.db.maxIdleConns, cfg.db.maxIdleTime)
 	if err != nil {
-		log.Panic(err)
+		logger.Fatal(err)
 	}
 	defer db.Close()
-	log.Println("Database connected")
+	logger.Info("Database connected")
 
 	store := store.NewStorage(db)
 
 	app := &application{
 		config: cfg,
 		store:  store,
+		logger: logger,
 	}
 
 	mux := app.mount()
 
-	log.Printf("Server has started at %s", app.config.addr)
-	log.Fatal(app.run(mux))
+	logger.Info("Server started on :3000")
+	logger.Fatal(app.run(mux))
 }

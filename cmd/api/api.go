@@ -10,12 +10,14 @@ import (
 	"github.com/robertgouveia/social/docs"
 	"github.com/robertgouveia/social/internal/store"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
+	"go.uber.org/zap"
 )
 
 // DI - Dependency Injection
 type application struct {
 	config config
 	store  store.Storage
+	logger *zap.SugaredLogger
 }
 
 type dbConfig struct {
@@ -89,5 +91,6 @@ func (app *application) run(mux http.Handler) error {
 		IdleTimeout:  1 * time.Minute,
 	}
 
+	app.logger.Infow("Server has started", "addr", app.config.addr, "env", app.config.env)
 	return srv.ListenAndServe()
 }
