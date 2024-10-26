@@ -16,6 +16,20 @@ type FollowUser struct {
 
 const userCtx userKey = "users"
 
+// GetUser godoc
+//
+//	@Summary		Fetches a user profile
+//	@Description	Fetches a user profile by ID
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"User ID"
+//	@Success		200	{object}	store.User
+//	@Failure		400	{object}	error
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/users/{id} [get]
 func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromContext(r)
 
@@ -24,6 +38,18 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// FollowUser godoc
+//
+//	@Summary		Follows a user
+//	@Description	Follows a user profile by ID
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int		true	"User ID"
+//	@Success		204	{string}	string	"User followed"
+//	@Failure		400	{object}	error	"User not found"
+//	@Security		ApiKeyAuth
+//	@Router			/users/{id}/follow [put]
 func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	followUser := getUserFromContext(r)
 
@@ -52,6 +78,18 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// UnfollowUser godoc
+//
+//	@Summary		Unfollows a user
+//	@Description	Unfollows a user profile by ID
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int		true	"User ID"
+//	@Success		204	{string}	string	"User unfollowed"
+//	@Failure		400	{object}	error	"User not found"
+//	@Security		ApiKeyAuth
+//	@Router			/users/{id}/unfollow [put]
 func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
 	unfollowedUser := getUserFromContext(r)
 

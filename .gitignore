@@ -5,6 +5,7 @@
 # Ignore all files in bin
 /db-data
 /bin/*
+/docs/*
 
 /tmp/*
 *.exe
