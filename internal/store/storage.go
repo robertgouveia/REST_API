@@ -11,6 +11,8 @@ var (
 	ErrNotFound          = errors.New("record not found")
 	ErrConflict          = errors.New("client conflict in versions")
 	QueryTimeoutDuration = time.Second * 5
+	ErrDuplicateEmail    = errors.New("email already exists")
+	ErrDuplicateUsername = errors.New("username already exists")
 )
 
 // Repository Pattern for decoupling
@@ -26,9 +28,9 @@ type Storage struct {
 	}
 
 	Users interface {
-		Create(context.Context, *User) error
+		Create(context.Context, *sql.Tx, *User) error
 		GetByID(context.Context, int64) (*User, error)
-		CreateAndInvite(context.Context, *User, string) error
+		CreateAndInvite(context.Context, *User, string, time.Duration) error
 	}
 
 	Comments interface {
@@ -51,4 +53,22 @@ func NewStorage(db *sql.DB) Storage {
 		Comments:  &CommentStore{db},
 		Followers: &FollowerStore{db},
 	}
+}
+
+func withTx(db *sql.DB, ctx context.Context, fn func(*sql.Tx) error) error {
+	//begin creates a transaction which can be rolled back
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	//send the transaction to the function
+	if err := fn(tx); err != nil {
+		//if an error occurs we can rollback
+		_ = tx.Rollback()
+		return err
+	}
+
+	//completes the transation
+	return tx.Commit()
 }

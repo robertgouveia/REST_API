@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/robertgouveia/social/internal/store"
 )
 
@@ -35,9 +38,23 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	ctx := r.Context()
-	// store the user
-	if err := app.store.Users.CreateAndInvite(ctx, user, "token-123"); err != nil {
-		app.internalServerError(w, r, err)
+
+	plainToken := uuid.New().String()
+
+	//store token in db (hashed)
+	hash := sha256.Sum256([]byte(plainToken)) // simple encryption
+	hashToken := hex.EncodeToString(hash[:])  //[:] completely since its a slice
+
+	// store the user and invitation
+	if err := app.store.Users.CreateAndInvite(ctx, user, hashToken, app.config.mail.exp); err != nil {
+		switch err {
+		case store.ErrDuplicateEmail:
+			app.badRequest(w, r, err)
+		case store.ErrDuplicateUsername:
+			app.badRequest(w, r, err)
+		default:
+			app.internalServerError(w, r, err)
+		}
 		return
 	}
 
