@@ -2,93 +2,93 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
-	"math/rand/v2"
-	"strconv"
+
+	"math/rand"
 
 	"github.com/robertgouveia/social/internal/store"
 )
 
 var usernames = []string{
-	"CoolCat", "SkyWalker", "NeonNinja", "FastFalcon", "PixelPanda", "ShadowSeeker", "ElectricEagle", "AcePilot", "StormSurfer", "BlazeTrail",
-	"MysticMuse", "CyberWolf", "ThunderBolt", "AquaArcher", "LunarLion", "IronClad", "QuantumQuest", "EchoNight", "SolarScribe", "DreamDrifter",
-	"FireFury", "GravityGuru", "HexHawk", "OrbitOracle", "SwiftSparrow", "InfernoIvy", "FrostFox", "ZenZero", "TidalTiger", "CloudCrafter",
-	"WindWanderer", "SteelShade", "CrimsonCrow", "SparkPhoenix", "NovaNoble", "StoneSculptor", "GlitterGale", "HorizonHawk", "AstralArrow", "EchoElf",
-	"WildWhisper", "DynamoDuck", "KnightVigil", "FableForge", "StormStriker", "RuneRaven", "SwiftSage", "PulsePilot", "ChillCrusader", "EpicEagle",
+	"alice", "bob", "charlie", "dave", "eve", "frank", "grace", "heidi",
+	"ivan", "judy", "karl", "laura", "mallory", "nina", "oscar", "peggy",
+	"quinn", "rachel", "steve", "trent", "ursula", "victor", "wendy", "xander",
+	"yvonne", "zack", "amber", "brian", "carol", "doug", "eric", "fiona",
+	"george", "hannah", "ian", "jessica", "kevin", "lisa", "mike", "natalie",
+	"oliver", "peter", "queen", "ron", "susan", "tim", "uma", "vicky",
+	"walter", "xenia", "yasmin", "zoe",
 }
 
-var postTitles = []string{
-	"Exploring the Unknown", "Top 10 Travel Hacks", "Mastering the Art of Focus", "Healthy Habits for Life",
-	"Secrets of Great Leaders", "Boost Your Productivity", "DIY Home Makeover Tips", "Learning to Code 101",
-	"Mindfulness for Beginners", "How to Stay Motivated", "Creating a Morning Routine", "Budget Travel Guide",
-	"Top Books to Read", "Quick & Easy Recipes", "Guide to Personal Finance", "Fitness at Home",
-	"Photography Tips & Tricks", "Mastering Time Management", "Gardening for Beginners", "Overcoming Procrastination",
+var titles = []string{
+	"The Power of Habit", "Embracing Minimalism", "Healthy Eating Tips",
+	"Travel on a Budget", "Mindfulness Meditation", "Boost Your Productivity",
+	"Home Office Setup", "Digital Detox", "Gardening Basics",
+	"DIY Home Projects", "Yoga for Beginners", "Sustainable Living",
+	"Mastering Time Management", "Exploring Nature", "Simple Cooking Recipes",
+	"Fitness at Home", "Personal Finance Tips", "Creative Writing",
+	"Mental Health Awareness", "Learning New Skills",
 }
 
-var postContents = []string{
-	"Discover the thrill of venturing into the unknown and the rewards it brings.",
-	"Planning a trip? Here are the top 10 travel hacks to make your journey smoother.",
-	"Learn key techniques to improve your focus and achieve your goals efficiently.",
-	"Building healthy habits can be life-changing—here's a guide to get started.",
-	"Uncover what makes great leaders tick, and learn how you can apply it to your life.",
-	"Boost your productivity with these proven tips and tools for a more effective day.",
-	"Give your home a fresh look with these DIY makeover tips—easy and affordable!",
-	"Want to start coding? Here’s a beginner’s guide to kickstart your journey in tech.",
-	"Curious about mindfulness? Learn the basics and see how it can transform your days.",
-	"Need motivation? Here are simple strategies to keep your energy and enthusiasm high.",
-	"Create a morning routine that sets you up for success with these easy steps.",
-	"Traveling on a budget doesn’t have to be hard—here’s how to explore affordably.",
-	"Looking for a good read? Check out this list of must-read books across genres.",
-	"Cooking at home is easier than ever with these quick and easy recipes for busy days.",
-	"Take control of your finances with practical advice on budgeting and saving.",
-	"Get fit without leaving home with these simple exercises and routines.",
-	"Elevate your photography skills with these essential tips for beginners and pros.",
-	"Master time management with these techniques to make the most of each day.",
-	"Start your own garden with this beginner's guide, from plants to tools.",
-	"Break free from procrastination with strategies to help you take action today.",
+var contents = []string{
+	"In this post, we'll explore how to develop good habits that stick and transform your life.",
+	"Discover the benefits of a minimalist lifestyle and how to declutter your home and mind.",
+	"Learn practical tips for eating healthy on a budget without sacrificing flavor.",
+	"Traveling doesn't have to be expensive. Here are some tips for seeing the world on a budget.",
+	"Mindfulness meditation can reduce stress and improve your mental well-being. Here's how to get started.",
+	"Increase your productivity with these simple and effective strategies.",
+	"Set up the perfect home office to boost your work-from-home efficiency and comfort.",
+	"A digital detox can help you reconnect with the real world and improve your mental health.",
+	"Start your gardening journey with these basic tips for beginners.",
+	"Transform your home with these fun and easy DIY projects.",
+	"Yoga is a great way to stay fit and flexible. Here are some beginner-friendly poses to try.",
+	"Sustainable living is good for you and the planet. Learn how to make eco-friendly choices.",
+	"Master time management with these tips and get more done in less time.",
+	"Nature has so much to offer. Discover the benefits of spending time outdoors.",
+	"Whip up delicious meals with these simple and quick cooking recipes.",
+	"Stay fit without leaving home with these effective at-home workout routines.",
+	"Take control of your finances with these practical personal finance tips.",
+	"Unleash your creativity with these inspiring writing prompts and exercises.",
+	"Mental health is just as important as physical health. Learn how to take care of your mind.",
+	"Learning new skills can be fun and rewarding. Here are some ideas to get you started.",
 }
 
 var tags = []string{
-	"Adventure", "Travel", "Productivity", "Health", "Leadership",
-	"DIY", "Coding", "Mindfulness", "Motivation", "Routine",
-	"Budgeting", "Books", "Recipes", "Finance", "Fitness",
-	"Photography", "Time Management", "Gardening", "Self-Improvement", "Lifestyle",
+	"Self Improvement", "Minimalism", "Health", "Travel", "Mindfulness",
+	"Productivity", "Home Office", "Digital Detox", "Gardening", "DIY",
+	"Yoga", "Sustainability", "Time Management", "Nature", "Cooking",
+	"Fitness", "Personal Finance", "Writing", "Mental Health", "Learning",
 }
 
 var comments = []string{
-	"Great tips! I always wanted to explore more.",
-	"These travel hacks are a lifesaver. Thanks for sharing!",
-	"I struggle with focus; I'll definitely try these techniques.",
-	"Healthy habits make such a difference in my life. Love this!",
-	"Interesting perspective on leadership; very inspiring!",
-	"Productivity tips are always welcome! Can't wait to try them.",
-	"I love DIY projects! Can’t wait to start my makeover.",
-	"Coding is intimidating, but this guide makes it feel achievable!",
-	"Mindfulness has really changed my approach to stress. Thank you!",
-	"I could use some motivation today; this was perfect!",
-	"Morning routines are crucial! I've been wanting to improve mine.",
-	"Budget travel ideas are gold! I need this for my next trip.",
-	"Excited to check out these book recommendations!",
-	"Quick recipes are a lifesaver for busy weeknights. Thank you!",
-	"Great advice on finance; I’m working on my budget.",
-	"I never thought fitness could be this fun at home!",
-	"Photography tips are always appreciated; can't wait to learn!",
-	"Time management is key! I need to implement these tips.",
-	"Gardening seems fun! I'm thinking of starting small.",
-	"Procrastination is my biggest enemy. This is motivating!",
+	"Great post! Thanks for sharing.",
+	"I completely agree with your thoughts.",
+	"Thanks for the tips, very helpful.",
+	"Interesting perspective, I hadn't considered that.",
+	"Thanks for sharing your experience.",
+	"Well written, I enjoyed reading this.",
+	"This is very insightful, thanks for posting.",
+	"Great advice, I'll definitely try that.",
+	"I love this, very inspirational.",
+	"Thanks for the information, very useful.",
 }
 
-func Seed(store store.Storage) {
+func Seed(store store.Storage, db *sql.DB) {
 	ctx := context.Background()
 
 	users := generateUsers(100)
+	tx, _ := db.BeginTx(ctx, nil)
+
 	for _, user := range users {
-		if err := store.Users.Create(ctx, user); err != nil {
+		if err := store.Users.Create(ctx, tx, user); err != nil {
+			_ = tx.Rollback()
 			log.Println("Error creating user:", err)
 			return
 		}
 	}
+
+	tx.Commit()
 
 	posts := generatePosts(200, users)
 	for _, post := range posts {
@@ -106,7 +106,7 @@ func Seed(store store.Storage) {
 		}
 	}
 
-	log.Println("Seeding Complete")
+	log.Println("Seeding complete")
 }
 
 func generateUsers(num int) []*store.User {
@@ -114,10 +114,8 @@ func generateUsers(num int) []*store.User {
 
 	for i := 0; i < num; i++ {
 		users[i] = &store.User{
-			//modulo allows for looping (5 % 5 = 0 -- first title)
-			Username: usernames[i%len(usernames)] + strconv.Itoa(rand.IntN(1000)),
-			Email:    fmt.Sprintf("user%d@example.com", i),
-			Password: "123123",
+			Username: usernames[i%len(usernames)] + fmt.Sprintf("%d", i),
+			Email:    usernames[i%len(usernames)] + fmt.Sprintf("%d", i) + "@example.com",
 		}
 	}
 
@@ -126,40 +124,31 @@ func generateUsers(num int) []*store.User {
 
 func generatePosts(num int, users []*store.User) []*store.Post {
 	posts := make([]*store.Post, num)
-
 	for i := 0; i < num; i++ {
-		user := users[rand.IntN(len(users))]
+		user := users[rand.Intn(len(users))]
 
 		posts[i] = &store.Post{
 			UserID:  user.ID,
-			Title:   postTitles[rand.IntN(len(postTitles))],
-			Content: postContents[rand.IntN(len(postContents))],
-			Tags:    generateTags(3),
+			Title:   titles[rand.Intn(len(titles))],
+			Content: titles[rand.Intn(len(contents))],
+			Tags: []string{
+				tags[rand.Intn(len(tags))],
+				tags[rand.Intn(len(tags))],
+			},
 		}
 	}
 
 	return posts
 }
 
-func generateTags(maxNum int) []string {
-	randNum := rand.IntN(maxNum)
-	res := make([]string, randNum)
-	for i := 0; i < randNum; i++ {
-		res = append(res, tags[rand.IntN(len(tags))])
-	}
-
-	return res
-}
-
 func generateComments(num int, users []*store.User, posts []*store.Post) []*store.Comment {
 	cms := make([]*store.Comment, num)
 	for i := 0; i < num; i++ {
 		cms[i] = &store.Comment{
-			PostID:  posts[rand.IntN(len(posts))].ID,
-			UserID:  users[rand.IntN(len(users))].ID,
-			Content: comments[rand.IntN(len(comments))],
+			PostID:  posts[rand.Intn(len(posts))].ID,
+			UserID:  users[rand.Intn(len(users))].ID,
+			Content: comments[rand.Intn(len(comments))],
 		}
 	}
-
 	return cms
 }
