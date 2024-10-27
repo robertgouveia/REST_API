@@ -1,12 +1,9 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"net/http"
-	"strconv"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/robertgouveia/social/internal/store"
 )
 
@@ -170,36 +167,6 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 		app.internalServerError(w, r, err)
 		return
 	}
-}
-
-func (app *application) postsContextMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		postID := chi.URLParam(r, "postID")
-		id, err := strconv.ParseInt(postID, 10, 64)
-		if err != nil {
-			app.internalServerError(w, r, err)
-			return
-		}
-
-		ctx := r.Context()
-
-		post, err := app.store.Posts.GetByID(ctx, id)
-		if err != nil {
-			switch {
-			case errors.Is(err, store.ErrNotFound):
-				app.notFound(w, r, err)
-			default:
-				app.internalServerError(w, r, err)
-			}
-			return
-		}
-
-		//attaching a value to a context
-		ctx = context.WithValue(ctx, postCtx, post)
-
-		//passing parameters inside the context
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
 }
 
 func getPostFromCtx(r *http.Request) *store.Post {
