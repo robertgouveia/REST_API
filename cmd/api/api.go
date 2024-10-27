@@ -19,7 +19,7 @@ type application struct {
 	config config
 	store  store.Storage
 	logger *zap.SugaredLogger
-	mailer mail.Client
+	mailer *mail.MailHog
 }
 
 type dbConfig struct {

@@ -82,18 +82,20 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		ActivationURL: activationURL,
 	}
 
-	err := app.mailer.Send(mail.UserWelcomeTemplate, user.Username, user.Email, vars, !isProdEnv)
-	if err != nil {
-		app.logger.Errorw("error sending welcome email", "error", err.Error())
+	status, err := app.mailer.Send(mail.UserWelcomeTemplate, user.Username, user.Email, vars, !isProdEnv)
+	if err != nil || status != http.StatusOK {
+		app.logger.Error("error sending welcome email")
 
 		//rollback user creation if email fails (SAGA)
 		if err := app.store.Users.Delete(ctx, user.ID); err != nil {
 			app.logger.Errorw("error deleting user", "error", err.Error())
 		}
 
-		app.internalServerError(w, r, err)
+		app.internalServerError(w, r, fmt.Errorf("unable to complete email sign up"))
 		return
 	}
+
+	app.logger.Infow("Email sent", "status code", status)
 
 	if err := app.jsonResponse(w, http.StatusCreated, userWithToken); err != nil {
 		app.internalServerError(w, r, err)

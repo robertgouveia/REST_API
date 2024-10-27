@@ -63,7 +63,7 @@ func main() {
 
 	store := store.NewStorage(db)
 
-	mailer := mail.NewSendGrid(cfg.mail.sendGrid.apiKey, cfg.mail.fromEmail)
+	mailer := mail.NewMailHog("gopher@hotmail.com")
 
 	app := &application{
 		config: cfg,
