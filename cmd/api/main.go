@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/robertgouveia/social/internal/auth"
 	"github.com/robertgouveia/social/internal/db"
 	"github.com/robertgouveia/social/internal/env"
 	"github.com/robertgouveia/social/internal/mail"
@@ -54,6 +55,11 @@ func main() {
 				user:     env.GetString("AUTH_BASIC_USER", "admin"),
 				password: env.GetString("AUTH_BASIC_PASS", "admin"),
 			},
+			token: tokenConfig{
+				secret: env.GetString("AUTH_TOKEN_SECRET", "example"),
+				exp:    time.Hour * 24 * 3, // 3 days
+				iss:    "gophersocial",
+			},
 		},
 	}
 
@@ -71,11 +77,14 @@ func main() {
 
 	mailer := mail.NewMailHog("gopher@hotmail.com")
 
+	jwtAuthenticator := auth.NewJWTAuthenticator(cfg.auth.token.secret, cfg.auth.token.iss, cfg.auth.token.iss)
+
 	app := &application{
-		config: cfg,
-		store:  store,
-		logger: logger,
-		mailer: mailer,
+		config:        cfg,
+		store:         store,
+		logger:        logger,
+		mailer:        mailer,
+		authenticator: &jwtAuthenticator,
 	}
 
 	mux := app.mount()

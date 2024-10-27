@@ -33,6 +33,7 @@ type Storage struct {
 		CreateAndInvite(context.Context, *User, string, time.Duration) error
 		Activate(context.Context, string) error
 		Delete(context.Context, int64) error
+		GetByEmail(context.Context, string) (*User, error)
 	}
 
 	Comments interface {
