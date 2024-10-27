@@ -23,6 +23,15 @@ type application struct {
 	mailer *mail.MailHog
 }
 
+type authConfig struct {
+	basic basicConfig
+}
+
+type basicConfig struct {
+	user     string
+	password string
+}
+
 type dbConfig struct {
 	addr         string
 	maxOpenConns int
@@ -37,6 +46,7 @@ type config struct {
 	apiURL      string
 	mail        mailConfig
 	frontendURL string
+	auth        authConfig
 }
 
 type mailConfig struct {
@@ -69,7 +79,7 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Get("/health", app.healthCheckHandler)
+		r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheckHandler)
 
 		// multiple documents, configuration
 		docsURL := fmt.Sprintf("%s/swagger/doc.json", app.config.addr)
