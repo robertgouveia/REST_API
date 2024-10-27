@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/go-chi/cors v1.2.1 // indirect
 	github.com/sendgrid/rest v2.6.9+incompatible // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
