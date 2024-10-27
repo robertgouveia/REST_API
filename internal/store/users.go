@@ -44,13 +44,18 @@ type UserStore struct {
 
 func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	query := `
-	INSERT INTO users (username, password, email, role_id) VALUES ($1, $2, $3, $4) RETURNING id, created_at
+	INSERT INTO users (username, password, email, role_id) VALUES ($1, $2, $3, (SELECT id FROM roles WHERE name = $4)) RETURNING id, created_at
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	err := tx.QueryRowContext(ctx, query, user.Username, user.Password.hash, user.Email, user.RoleID).Scan(&user.ID, &user.CreatedAt)
+	role := user.Role.Name
+	if role == "" {
+		role = "user"
+	}
+
+	err := tx.QueryRowContext(ctx, query, user.Username, user.Password.hash, user.Email, role).Scan(&user.ID, &user.CreatedAt)
 
 	if err != nil {
 		switch {
@@ -68,7 +73,7 @@ func (s *UserStore) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 
 func (s *UserStore) update(ctx context.Context, tx *sql.Tx, user *User) error {
 	query := `
-		UPDATE users SET username = $1, email = $2, is_active = $3, role_id = $4 WHERE id = $4
+		UPDATE users SET username = $1, email = $2, is_active = $3, role_id = $4 WHERE id = $5
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -144,6 +149,7 @@ func (s *UserStore) Activate(ctx context.Context, token string) error {
 		}
 		// update the user
 		user.IsActive = true
+
 		if err := s.update(ctx, tx, user); err != nil {
 			return err
 		}
@@ -158,7 +164,7 @@ func (s *UserStore) Activate(ctx context.Context, token string) error {
 
 func (s *UserStore) getUserFromInvitation(ctx context.Context, tx *sql.Tx, token string) (*User, error) {
 	query := `
-		SELECT u.id, u.username, u.email, u.created_at, u.is_active FROM users u JOIN user_invitations ui ON u.id = ui.user_id WHERE ui.token = $1 AND ui.expiry > $2
+		SELECT u.id, u.username, u.email, u.created_at, u.is_active, u.role_id FROM users u JOIN user_invitations ui ON u.id = ui.user_id WHERE ui.token = $1 AND ui.expiry > $2
 	`
 
 	tokenByte := sha256.Sum256([]byte(token))
@@ -168,7 +174,7 @@ func (s *UserStore) getUserFromInvitation(ctx context.Context, tx *sql.Tx, token
 	defer cancel()
 
 	user := &User{}
-	err := tx.QueryRowContext(ctx, query, tokenHash, time.Now()).Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt, &user.IsActive)
+	err := tx.QueryRowContext(ctx, query, tokenHash, time.Now()).Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt, &user.IsActive, &user.RoleID)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
