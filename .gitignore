@@ -4,6 +4,7 @@
 # Binaries for programs and plugins
 # Ignore all files in bin
 /db-data
+/redis-data
 /bin/*
 /docs/*
 
